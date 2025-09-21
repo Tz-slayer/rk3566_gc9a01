@@ -17,5 +17,13 @@ public:
     virtual bool getPin(uint8_t pin) const = 0;
     // 设置GPIO引脚模式
     virtual void setPinMode(uint8_t pin, uint8_t mode) = 0;
+    // 设置DC
+    virtual void setDC(bool isData) = 0;
+    // 设置RST
+    virtual void setRST(bool isReset) = 0;
+    // 设置CS
+    virtual void setCS(bool isSelect) = 0;
+    // 设置LED
+    virtual void setLED(bool isOn) = 0;
 };
 

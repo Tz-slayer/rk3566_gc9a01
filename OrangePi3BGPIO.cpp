@@ -6,7 +6,7 @@ OrangePi3BGPIO::~OrangePi3BGPIO() {
 }
 
 bool OrangePi3BGPIO::init() {
-    if (wiringPiSetupGpio() == -1) {
+    if (wiringPiSetup() == -1) {
         return false;
     }
 
@@ -14,8 +14,6 @@ bool OrangePi3BGPIO::init() {
     pinMode(DC, OUTPUT);
     pinMode(RST, OUTPUT);
     pinMode(CS, OUTPUT);
-    pinMode(SDA, OUTPUT);
-    pinMode(SCL, OUTPUT);
 
     if (VCC != static_cast<uint8_t>(-1)) {
         pinMode(VCC, OUTPUT);
@@ -52,3 +50,20 @@ bool OrangePi3BGPIO::getPin(uint8_t pin) const {
 void OrangePi3BGPIO::setPinMode(uint8_t pin, uint8_t mode) {
     pinMode(pin, mode);
 }
+
+void OrangePi3BGPIO::setDC(bool isData) {
+    digitalWrite(DC, isData ? HIGH : LOW);
+}
+
+void OrangePi3BGPIO::setRST(bool isReset) {
+    digitalWrite(RST, isReset ? HIGH : LOW);
+}
+
+void OrangePi3BGPIO::setCS(bool isSelect) {
+    digitalWrite(CS, isSelect ? HIGH : LOW);
+}
+
+void OrangePi3BGPIO::setLED(bool isOn) {
+    digitalWrite(LED, isOn ? HIGH : LOW);
+}
+

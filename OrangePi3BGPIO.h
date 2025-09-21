@@ -17,7 +17,14 @@ public:
     bool getPin(uint8_t pin) const override;
     // 设置GPIO引脚模式
     void setPinMode(uint8_t pin, uint8_t mode) override;
-    
+    // 设置DC
+    void setDC(bool isData) override;
+    // 设置RST
+    void setRST(bool isReset) override;
+    // 设置CS
+    void setCS(bool isSelect) override;
+    // 设置LED
+    void setLED(bool isOn) override;
 private:
     uint8_t LED;
     uint8_t DC;
