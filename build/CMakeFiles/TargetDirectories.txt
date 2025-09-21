@@ -1,3 +1,0 @@
-D:/Download/Github/rk3566_gc9a01/build/CMakeFiles/test.dir
-D:/Download/Github/rk3566_gc9a01/build/CMakeFiles/ALL_BUILD.dir
-D:/Download/Github/rk3566_gc9a01/build/CMakeFiles/ZERO_CHECK.dir
