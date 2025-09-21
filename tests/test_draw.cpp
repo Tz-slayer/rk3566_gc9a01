@@ -6,6 +6,7 @@
 #include <vector>
 #include <unistd.h>
 #include <chrono>  // 添加计时库
+#include <opencv2/opencv.hpp>
 
 int main() {
     uint8_t LED = 10;
@@ -43,13 +44,44 @@ int main() {
     std::cout << "Testing setWindow..." << std::endl;
     display.setWindow(0, 0, 239, 239);
 
-    // 测试绘制策略（清屏），并测量 sendMemory 时间
+    // 测试绘制策略（清屏）
     std::cout << "Testing draw strategy clear..." << std::endl;
-    
-    // 预计算数据（模拟 chunk）
-    std::vector<uint8_t> chunk(4096, 0xFF);  // 示例 chunk，大小 4096 字节
-    
-    // 测量 sendMemory 时间
+    drawStrategy.clear(0xFFFF);  // 清屏为白色
+
+    // 使用 OpenCV 读取图像并显示
+    std::cout << "Testing displayImage with OpenCV..." << std::endl;
+    std::string imagePath = "tests/images/test1.jpg";  // 替换为实际图像路径
+    cv::Mat img = cv::imread(imagePath);
+    if (img.empty()) {
+        std::cout << "Failed to load image: " << imagePath << std::endl;
+        return 1;
+    }
+
+    // 调整图像大小到 240x240（如果需要）
+    cv::resize(img, img, cv::Size(240, 240));
+
+    // 转换为 RGB（OpenCV 默认 BGR）
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+
+    // 转换为 RGB565 格式
+    std::vector<uint16_t> image(240 * 240);
+    for (int y = 0; y < 240; ++y) {
+        for (int x = 0; x < 240; ++x) {
+            cv::Vec3b pixel = img.at<cv::Vec3b>(y, x);
+            uint8_t r = pixel[0] >> 3;  // R5
+            uint8_t g = pixel[1] >> 2;  // G6
+            uint8_t b = pixel[2] >> 3;  // B5
+            uint16_t rgb565 = (r << 11) | (g << 5) | b;
+            image[y * 240 + x] = rgb565;
+        }
+    }
+
+    std::vector<uint16_t> region = {0, 0, 239, 239};  // 全屏区域
+    drawStrategy.displayImage(image.data(), region);
+
+    // 测试 sendMemory 时间（可选）
+    std::cout << "Testing sendMemory time..." << std::endl;
+    std::vector<uint8_t> chunk(4096, 0xFF);  // 示例 chunk
     auto start = std::chrono::high_resolution_clock::now();
     display.sendMemory(chunk);
     auto end = std::chrono::high_resolution_clock::now();
@@ -57,9 +89,6 @@ int main() {
     std::cout << "sendMemory time: " << duration.count() << " ms" << std::endl;
 
     usleep(1000000); // 等待1秒
-
-    // 完整清屏测试（可选）
-    drawStrategy.clear(0xFFFF);  // 清屏为白色
 
     std::cout << "Test completed." << std::endl;
     return 0;

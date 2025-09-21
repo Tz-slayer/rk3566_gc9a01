@@ -1,15 +1,16 @@
 #pragma once
+#include "IDriverDisplay.h"
 #include "ISPIInterface.h"
 #include "IGPIOInterface.h"
 #include "IDrawStrategy.h"
 #include <cstdint>
 
 // GC9A01显示屏操作接口（桥接模式的Abstraction）
-class GC9A01Display {
+class GC9A01Display : public IDriverDisplay {
 private:
     ISPIInterface* spi_interface;
     IGPIOInterface* gpio_interface;
-    IDrawStrategy* draw_strategy;
+
     uint16_t width;       // 屏幕宽度
     uint16_t height;      // 屏幕高度
 

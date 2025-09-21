@@ -2,14 +2,14 @@
 #include <cstdint>
 #include <cstddef>
 #include "IDrawStrategy.h"
-#include "GC9A01Display.h"
+#include "IDriverDisplay.h"
 
 class BasicDrawStrategy : public IDrawStrategy {
 private:
-    GC9A01Display* display; // 指向GC9A01Display实例的指针
+    IDriverDisplay* display; // 指向IDriverDisplay实例的指针
 
 public:
-    BasicDrawStrategy(GC9A01Display* disp) : display(disp) {}
+    BasicDrawStrategy(IDriverDisplay* disp) : display(disp) {}
     ~BasicDrawStrategy() override = default;
 
     // 数据分块
