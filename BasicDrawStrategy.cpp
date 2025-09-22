@@ -1,4 +1,5 @@
 #include "BasicDrawStrategy.h"
+#include <unistd.h>
 
 void BasicDrawStrategy::sendInChunks(const std::vector<uint8_t>& data, size_t chunkSize) {
     size_t totalSize = data.size();
@@ -54,4 +55,11 @@ void BasicDrawStrategy::displayImage(const uint16_t* image, std::vector<uint16_t
 
     // 使用分块发送
     sendInChunks(buffer, 4096); // 块大小4096字节
+}
+
+void BasicDrawStrategy::displayImageSequence(const uint16_t* image, std::vector<std::vector<uint16_t>> regions, size_t delayMs) {
+    for (const auto& region : regions) {
+        displayImage(image, region);
+        usleep(delayMs * 1000); // 延时，单位转换为微秒
+    }
 }

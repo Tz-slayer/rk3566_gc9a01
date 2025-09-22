@@ -74,6 +74,13 @@
         "cinttypes": "cpp",
         "wiringpispi.h": "c",
         "iomanip": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "fstream": "cpp",
+        "complex": "cpp",
+        "condition_variable": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "mutex": "cpp"
     }
 }

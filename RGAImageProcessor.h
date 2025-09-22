@@ -1,22 +1,19 @@
 #pragma once
-#include "IImageProcessor.h"
+#include "dma_alloc.h"
+#include "im2d.h"
+#include "RgaUtils.h"
+#include "DMAPool.h"
+#include <cstring>
 
-// RGA图像处理器
-class RGAImageProcessor : public IImageProcessor {
+class RGAImageProcessor {
 public:
-    RGAImageProcessor() {}
-    virtual ~RGAImageProcessor() = default;
+    RGAImageProcessor(DMAPool &dma_pool) : dma_pool_(&dma_pool) {}
+    ~RGAImageProcessor() = default;
+    // 颜色转换
+    int cvtColor(void *src_image, void *dst_image, int width, int height, int src_fmt, int dst_fmt);
+    // 图像变换
+    int resize(void *src_image, void *dst_image, int src_width, int src_height, int dst_width, int dst_height, int src_fmt, int dst_fmt);
 
-    // 实现IImageProcessor接口
-    std::size_t getWidth() const override {
-        // 返回图像宽度
-    }
-
-    std::size_t getHeight() const override {
-        // 返回图像高度
-    }
-
-    const uint8_t* getData() const override {
-        // 返回图像数据
-    }
+private:
+    DMAPool *dma_pool_; // DMA 缓冲区池
 };

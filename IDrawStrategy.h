@@ -11,4 +11,6 @@ public:
     virtual void clear(uint16_t color) = 0;
     // 显示图片（RGB565格式）
     virtual void displayImage(const uint16_t* image, std::vector<uint16_t> region) = 0;
+
+    virtual void displayImageSequence(const uint16_t* image, std::vector<std::vector<uint16_t>> regions, size_t delayMs = 100) = 0;
 };
