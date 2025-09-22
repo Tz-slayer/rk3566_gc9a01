@@ -305,3 +305,8 @@ void GC9A01Display::initDisplay(uint8_t direction) {
     init(direction);
     printf("Display initialized\n");
 }
+
+// // 析构函数
+// GC9A01Display::~GC9A01Display() {
+
+// }

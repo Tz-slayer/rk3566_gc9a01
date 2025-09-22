@@ -57,9 +57,14 @@ void BasicDrawStrategy::displayImage(const uint16_t* image, std::vector<uint16_t
     sendInChunks(buffer, 4096); // 块大小4096字节
 }
 
-void BasicDrawStrategy::displayImageSequence(const uint16_t* image, std::vector<std::vector<uint16_t>> regions, size_t delayMs) {
-    for (const auto& region : regions) {
-        displayImage(image, region);
-        usleep(delayMs * 1000); // 延时，单位转换为微秒
+void BasicDrawStrategy::displayImageSequence(const std::vector<uint16_t*>& image, std::vector<std::vector<uint16_t>> regions, size_t delayMs) {
+    int size = image.size();
+    for (int i = 0; i < size; i++) {
+        displayImage(image[i], regions[i]);
+        usleep(delayMs * 1000); // 延时，单位微秒
     }
+}
+
+BasicDrawStrategy::~BasicDrawStrategy() {
+    clear(0x0000); // 清屏为黑色
 }

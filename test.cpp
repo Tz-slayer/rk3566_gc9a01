@@ -17,8 +17,6 @@ int main() {
         return -1;
     }
 
-    dma_pool.print_status();
-
     std::string webp_file = "../tests/images/test2/test2_frame_1.webp";
 
     // 读取图像

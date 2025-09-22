@@ -41,7 +41,7 @@ public:
             pool_.push_back(buf);
         }
         
-        printf("Preallocated %d DMA buffers of %zu bytes each\n", count, buffer_size);
+        // printf("Preallocated %d DMA buffers of %zu bytes each\n", count, buffer_size);
         return true;
     }
     
