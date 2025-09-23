@@ -30,6 +30,8 @@ DMABuffer* RGAImageProcessor::cvtColor(void *src_image, int width, int height, i
         printf("imcvtcolor failed: %s\n", imStrError((IM_STATUS)ret));
         return nullptr;
     }
+    // 释放掉函数内部使用的临时dmabuffer
+    dma_pool_->release(src_guard.buffer());
 
     // if (dst_guard.buffer()->va) {
     //     // memcpy(dst_image, dst_guard.buffer()->va, dst_buf_size);
@@ -67,6 +69,9 @@ DMABuffer* RGAImageProcessor::resize(void *src_image, int src_width, int src_hei
         printf("imresize failed: %s\n", imStrError((IM_STATUS)ret));
         return nullptr;
     }
+
+    // 释放掉函数内部使用的临时dmabuffer
+    dma_pool_->release(src_guard.buffer());
 
     // if (dst_guard.buffer()->va) {
     //     memcpy(dst_image, dst_guard.buffer()->va, dst_buf_size);

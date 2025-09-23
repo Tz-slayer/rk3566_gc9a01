@@ -7,8 +7,19 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
-#include <chrono>  // 添加计时库
+#include <csignal>
+#include <atomic>
+#include <chrono>
 #include <opencv2/opencv.hpp>
+
+// 全局退出标志
+volatile std::atomic<bool> exitFlag(false);
+
+// 全局信号处理
+void signalHandler(int signal) {
+    std::cerr << "Received signal " << signal << ", exiting..." << std::endl;
+    exitFlag.store(true);
+}
 
 void test_displayImage() {
     uint8_t LED = 10;
@@ -46,13 +57,17 @@ void test_displayImage() {
     DMABuffer *dst_dma_buf;
     RGAImageProcessor rga_processor(dma_pool);
     dst_dma_buf = rga_processor.cvtColor(src_image.data, src_width, src_height, RK_FORMAT_RGB_888, RK_FORMAT_RGB_565);
+    dma_pool.release(dst_dma_buf);
     dst_dma_buf = rga_processor.resize(dst_dma_buf->va, 480, 480, 240, 240, RK_FORMAT_RGB_565, RK_FORMAT_RGB_565);
     drawStrategy.displayImage((uint16_t*)dst_dma_buf->va, {0, 0, 239, 239});
+    dma_pool.print_status();
     dma_pool.release(dst_dma_buf);
+    dma_pool.print_status();
 
     usleep(1000000); // 等待1秒
 }
 
+// TODO：BasicDrawStrategy::displayImageSequence函数对于rga没有进行适配，导致dma内存空间无法在显示一张图像之后释放掉资源腾出dma池空间
 void test_displayImageSequence() {
     uint8_t LED = 10;
     uint8_t DC = 8;
@@ -78,38 +93,45 @@ void test_displayImageSequence() {
     // 测试初始化
     display.initDisplay(2);  // 默认方向
     DMAPool dma_pool;
-    if (!dma_pool.preallocate(2 * 1024 * 1024, 32)) {
+    if (!dma_pool.preallocate(2 * 1024 * 1024, 4)) {
         std::cout << "DMA Pool preallocate failed" << std::endl;
     }
     DMABuffer *dst_dma_buf;
     RGAImageProcessor rga_processor(dma_pool);
-    std::vector<DMABuffer*> dma_bufs;
+
     char imagePath1[256];
-    for (int i = 0; i < 14; i++) {
-        sprintf(imagePath1, "../../images/test2/test2_frame_%d.webp", i + 1);
-        cv::Mat src_image = cv::imread(imagePath1);
-        dst_dma_buf = rga_processor.cvtColor(src_image.data, 480, 480, RK_FORMAT_RGB_888, RK_FORMAT_RGB_565);
-        dst_dma_buf = rga_processor.resize(dst_dma_buf->va, 480, 480, 240, 240, RK_FORMAT_RGB_565, RK_FORMAT_RGB_565);
-        dma_bufs.push_back(dst_dma_buf);
-    }
-    std::vector<std::vector<uint16_t>> regions;
-    for (int i = 0; i < 14; ++i) {
-        regions.push_back({0, 0, 239, 239}); // 全屏区域
-    }
-    drawStrategy.displayImageSequence(
-        std::vector<uint16_t*>{(uint16_t*)dma_bufs[0]->va, (uint16_t*)dma_bufs[1]->va, (uint16_t*)dma_bufs[2]->va, (uint16_t*)dma_bufs[3]->va,
-                               (uint16_t*)dma_bufs[4]->va, (uint16_t*)dma_bufs[5]->va, (uint16_t*)dma_bufs[6]->va, (uint16_t*)dma_bufs[7]->va,
-                               (uint16_t*)dma_bufs[8]->va, (uint16_t*)dma_bufs[9]->va, (uint16_t*)dma_bufs[10]->va, (uint16_t*)dma_bufs[11]->va,
-                               (uint16_t*)dma_bufs[12]->va, (uint16_t*)dma_bufs[13]->va},
-        regions,
-        80);
-    for (auto buf : dma_bufs) {
-        dma_pool.release(buf);
+    while (!exitFlag.load()) {  // 外层循环检查退出标志
+        for (int i = 0; i < 14 && !exitFlag.load(); i++) {  // 内层也检查
+            sprintf(imagePath1, "../../images/test2/test2_frame_%d.webp", i + 1);
+            cv::Mat src_image = cv::imread(imagePath1);
+            if (src_image.empty()) continue;
+
+            dst_dma_buf = rga_processor.cvtColor(src_image.data, 480, 480, RK_FORMAT_RGB_888, RK_FORMAT_RGB_565);
+            if (dst_dma_buf) {
+                dma_pool.release(dst_dma_buf);
+                dst_dma_buf = rga_processor.resize(dst_dma_buf->va, 480, 480, 240, 240, RK_FORMAT_RGB_565, RK_FORMAT_RGB_565);
+                if (dst_dma_buf) {
+                    drawStrategy.displayImage((uint16_t*)dst_dma_buf->va, {0, 0, 239, 239});
+                    dma_pool.release(dst_dma_buf);
+                }
+            }
+            usleep(70000);
+        }
     }
 }
 
 int main() {
-    test_displayImage();
-    test_displayImageSequence();
+    // 注册信号处理
+    std::signal(SIGSEGV, signalHandler);
+    std::signal(SIGABRT, signalHandler);
+    std::signal(SIGINT, signalHandler);  // Ctrl+C
+
+    try {
+        test_displayImage();
+        test_displayImageSequence();
+    } catch (const std::exception& e) {
+        std::cerr << "Unhandled exception: " << e.what() << std::endl;
+    }
+
     return 0;
 }
